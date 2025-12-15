@@ -1,38 +1,63 @@
-console.log("Elvianne Luxury Website Loaded");
+const cart = document.getElementById("cart");
+const openCart = document.getElementById("openCart");
+const closeCart = document.getElementById("closeCart");
+const cartItems = document.getElementById("cartItems");
+const cartTotal = document.getElementById("cartTotal");
 
-window.addEventListener("load", () => {
-  const intro = document.getElementById("intro");
+let items = JSON.parse(localStorage.getItem("cart")) || [];
 
-  setTimeout(() => {
-    intro.style.display = "none";
-  }, 4200); // must match animation delay
-});
+// Open / Close Cart
+openCart.onclick = () => { cart.classList.add("open"); renderCart(); };
+closeCart.onclick = () => cart.classList.remove("open");
 
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
+// Add to cart
 document.querySelectorAll(".product-card button").forEach(btn => {
-  btn.addEventListener("click", () => {
+  btn.onclick = () => {
     const card = btn.closest(".product-card");
-    const product = {
-      name: card.querySelector("h3").innerText,
-      price: card.querySelector("span").innerText,
-      image: card.querySelector("img").src
-    };
-
-    cart.push(product);
-    localStorage.setItem("cart", JSON.stringify(cart));
-    alert("Added to cart");
-  });
+    const name = card.dataset.name;
+    const price = Number(card.dataset.price);
+    items.push({ name, price });
+    save();
+    cart.classList.add("open");
+  };
 });
 
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if(entry.isIntersecting){
-      entry.target.classList.add("show");
-    }
+// Render cart
+function renderCart() {
+  cartItems.innerHTML = "";
+  let total = 0;
+  items.forEach(i => {
+    total += i.price;
+    cartItems.innerHTML += `
+      <div class="cart-item">
+        <span>${i.name}</span>
+        <strong>₹${i.price}</strong>
+      </div>
+    `;
   });
-},{ threshold: 0.15 });
+  cartTotal.innerText = `Total: ₹${total}`;
+}
 
-document.querySelectorAll(".section, .product-card").forEach(el=>{
-  observer.observe(el);
+// Save cart
+function save() {
+  localStorage.setItem("cart", JSON.stringify(items));
+  renderCart();
+}
+
+// Scroll buttons
+document.querySelectorAll(".scroll-shop").forEach(btn => {
+  btn.onclick = () =>
+    document.querySelector("#new").scrollIntoView({ behavior: "smooth" });
 });
+
+// Checkout
+document.getElementById("payNow").onclick = () => {
+  alert("Payment successful (Demo)");
+  items = [];
+  save();
+  cart.classList.remove("open");
+};
+
+document.getElementById("checkoutBtn").onclick = () => {
+  cart.classList.add("open");
+};
